@@ -1,0 +1,14 @@
+/*
+ * (C) 2021 FCNT LIMITED
+*/
+/* SPDX-License-Identifier: GPL-2.0 */
+#ifndef __LINUX_CUSTOM_MODE_H
+#define __LINUX_CUSTOM_MODE_H
+
+typedef enum {
+ CUSTOM_MODE_INVALID = 0,
+ CUSTOM_MODE_OFF_CHARGE,
+ CUSTOM_MODE_NORMAL,
+} CUSTOM_BOOTMODE;
+
+#endif /* __LINUX_CUSTOM_MODE_H */

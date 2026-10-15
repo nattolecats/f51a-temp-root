@@ -1,0 +1,17 @@
+F-51A temporary root (CVE-2023-33107 port)
+
+This project contains adaptations of work from:
+
+* CVE-2023-33107 by keto0422
+  https://github.com/keto0422/CVE-2023-33107
+  commit e82cee751c5b4d2fcbb5bcf0b7f09e940d909841
+  Retained for reference as source/upstream/ex.c
+  (SHA-256 74df44f4c085adcb44fde52cd145cb12a2b9dc65e1a011f47c7c255582b96037)
+
+source/kernel/ and source/vendor/ are the Linux 4.19 kernel sources FCNT
+publishes for F-51A (release OSV-S_F51A_V68R047A), used only to derive the
+struct offsets in source/src/ex.c. They remain under GPL-2.0.
+
+The upstream repository declares no license. Redistribution terms for the
+parts of source/src/ex.c derived from it are therefore unsettled and need to
+be resolved with its author before this repository is published.

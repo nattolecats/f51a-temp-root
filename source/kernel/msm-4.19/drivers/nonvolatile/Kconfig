@@ -1,0 +1,10 @@
+#===============================================================================
+# (C) 2021 FCNT LIMITED
+#===============================================================================
+
+#
+# nonvolatile configuration
+#
+config NONVOLATILE
+	tristate "Nonvolatile data read/write support"
+

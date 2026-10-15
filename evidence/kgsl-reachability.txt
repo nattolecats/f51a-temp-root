@@ -1,0 +1,32 @@
+F-51A V71R051A — reachability of /dev/kgsl-3d0 from an unprivileged app
+Extracted offline from the device's own partition dump (super.img)
+  lpunpack -p system_a / -p vendor_a, then 7z x
+The 15 GiB dump is no longer retained; these extracted lines are the record.
+Sources inside the device:
+  /vendor/etc/selinux/vendor_file_contexts
+  /vendor/ueventd.rc
+  /system/etc/selinux/plat_sepolicy.cil
+
+--- device node label (vendor_file_contexts) ---
+871:/dev/kgsl-3d0                                   u:object_r:gpu_device:s0
+
+--- device node mode (vendor/ueventd.rc) ---
+39:/dev/kgsl                 0666   system     system
+40:/dev/kgsl-3d0             0666   system     system
+
+--- platform policy: who may ioctl gpu_device (plat_sepolicy.cil) ---
+6436:(allow base_typeattr_192 gpu_device (chr_file (ioctl read write getattr lock append map open watch watch_reads)))
+26877:(typeattributeset base_typeattr_192 (and (appdomain ) (not (isolated_app ))))
+
+--- related neverallow constraints ---
+17044:(neverallow app_zygote gpu_device (chr_file (ioctl read write getattr lock append map execute open watch watch_reads execute_no_trans)))
+18700:(neverallow ephemeral_app gpu_device (chr_file (execute)))
+19878:(neverallow isolated_app gpu_device (chr_file (ioctl read write getattr lock append map execute open watch watch_reads)))
+
+Conclusion: base_typeattr_192 resolves to "appdomain and not isolated_app",
+so every ordinary application domain, including untrusted_app (a third-party
+app holding no Android permission), is allowed open/read/write/ioctl/map on
+gpu_device, and /dev/kgsl-3d0 is mode 0666. The ioctls the PoC uses
+(IOCTL_KGSL_GPUOBJ_ALLOC 0x45, IOCTL_KGSL_GPUOBJ_FREE 0x46,
+IOCTL_KGSL_MAP_USER_MEM 0x15) are therefore reachable from an unprivileged
+app, not only from the adb shell domain used during validation.
